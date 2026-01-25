@@ -5,7 +5,7 @@ import User from '../models/User.js';
 
 describe('👤 User Auth Tests', () => {
   beforeAll(async () => {
-    await mongoose.connect('mongodb://127.0.0.1:27017/rentmyfit_test');
+    await mongoose.connect('mongodb://127.0.0.1:27017/rentit_test');
   }, 15000);
 
   afterEach(async () => {

@@ -4,7 +4,7 @@ import app from '../app.js';
 import Product from '../models/Product.js';
 
 beforeAll(async () => {
-  await mongoose.connect('mongodb://127.0.0.1:27017/rentmyfit_test');
+  await mongoose.connect('mongodb://127.0.0.1:27017/rentit_test');
 });
 
 afterEach(async () => {

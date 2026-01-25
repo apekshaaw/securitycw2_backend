@@ -1,5 +1,5 @@
 {
-  "name": "rentmyfit_backend",
+  "name": "rentit_backend",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
