@@ -2,6 +2,12 @@ import express from 'express';
 import {
   registerUser,
   loginUser,
+  sendOtp,
+  verifyOtp,
+  verifyLoginOtp,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword, 
   updateProfile,
   deleteAccount,
   addToWishlist,
@@ -24,9 +30,18 @@ const router = express.Router();
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+
+// ✅ NEW: verify OTP during login (MFA)
+router.post('/verify-login-otp', verifyLoginOtp);
+
 router.get('/profile', authMiddleware, getUserProfile);
 router.put('/profile', authMiddleware, updateProfile);
 router.delete('/account', authMiddleware, deleteAccount);
+router.post('/send-otp', sendOtp);
+router.post('/verify-otp', verifyOtp);
+router.post('/forgot-password', forgotPassword);
+router.post('/verify-reset-otp', verifyResetOtp);
+router.post('/reset-password', resetPassword);
 
 // ======================
 // Wishlist Routes
