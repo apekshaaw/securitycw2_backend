@@ -4,6 +4,8 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import Product from "../models/Product.js"; // (kept as-is, even if unused)
+import { logAction } from "../utils/auditLogger.js";
+
 
 // ======================
 // ✅ ADMIN CONFIG (NEW)
@@ -138,8 +140,13 @@ export const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: ADMIN_EMAILS.has(email) ? "admin" : "user", // ✅ NEW
+      role: ADMIN_EMAILS.has(email) ? "admin" : "user",
+       // ✅ NEW
     });
+
+    req.user = user;
+    await logAction(req, "REGISTER_SUCCESS");
+
 
     otpStore.delete(email);
 
@@ -162,15 +169,17 @@ export const loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
+      await logAction(req, "LOGIN_FAILED", { email });
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // 🔒 Account locked check
     if (user.lockUntil && user.lockUntil > Date.now()) {
-      return res.status(403).json({
-        message: "Account locked. Try again later.",
-      });
-    }
+  await logAction(req, "LOGIN_BLOCKED_LOCKED", { email, lockUntil: user.lockUntil });
+  return res.status(403).json({
+    message: "Account locked. Try again later.",
+  });
+}
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -180,13 +189,16 @@ export const loginUser = async (req, res) => {
       if (user.loginAttempts >= 5) {
         user.lockUntil = Date.now() + 10 * 60 * 1000;
         await user.save();
+        await logAction(req, "LOGIN_LOCKED", { email, attempts: user.loginAttempts });
+
 
         return res.status(403).json({
-          message: "Too many failed attempts. Account locked for 15 minutes.",
+          message: "Too many failed attempts. Account locked for 10 minutes.",
         });
       }
 
       await user.save();
+      await logAction(req, "LOGIN_FAILED", { email, attempts: user.loginAttempts });
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
@@ -204,6 +216,7 @@ export const loginUser = async (req, res) => {
     });
 
     await sendOtpEmail(email, otp);
+    await logAction(req, "LOGIN_PASSWORD_OK_OTP_SENT", { email });
 
     return res.status(200).json({
       message: "OTP sent to your email",
@@ -247,6 +260,8 @@ export const verifyLoginOtp = async (req, res) => {
     }
 
     otpStore.delete(email);
+    req.user = user;
+    await logAction(req, "LOGIN_SUCCESS", { email: user.email });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -325,6 +340,7 @@ export const forgotPassword = async (req, res) => {
     });
 
     await sendOtpEmail(email, otp);
+    await logAction(req, "FORGOT_PASSWORD_OTP_SENT", { email });
     return res.status(200).json({ message: "OTP sent to email" });
   } catch (error) {
     console.error("Forgot Password Error:", error.message);
@@ -428,6 +444,9 @@ export const updateProfile = async (req, res) => {
     if (address) user.address = address;
 
     await user.save();
+    req.user = user;
+    await logAction(req, "PROFILE_UPDATE");
+
 
     return res.status(200).json({
       message: "Profile updated",
@@ -451,13 +470,22 @@ export const updateProfile = async (req, res) => {
 export const deleteAccount = async (req, res) => {
   try {
     const userId = req.userId;
+
+    const user = await User.findById(userId);
+    if (user) {
+      req.user = user;
+      await logAction(req, "ACCOUNT_DELETE");
+    }
+
     await User.findByIdAndDelete(userId);
+
     return res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {
     console.error("Delete Account Error:", error.message);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ======================
 // CHANGE PASSWORD (NEW)
@@ -491,6 +519,9 @@ export const changePassword = async (req, res) => {
 
     user.password = await bcrypt.hash(String(newPassword), 10);
     await user.save();
+    req.user = user;
+    await logAction(req, "PASSWORD_CHANGE");
+
 
     return res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
