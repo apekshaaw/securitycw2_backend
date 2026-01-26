@@ -5,6 +5,8 @@ import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import stripeRoutes from "./routes/stripeRoutes.js";
+import auditRoutes from "./routes/auditRoutes.js";
+
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/stripe", stripeRoutes);
+app.use("/api/admin", auditRoutes);
+
 
 // Health check (optional but helpful)
 app.get("/api/health", (req, res) => {
