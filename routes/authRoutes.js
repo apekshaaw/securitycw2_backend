@@ -2,6 +2,12 @@ import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 import {
+  loginLimiter,
+  sendOtpLimiter,
+  verifyLoginOtpLimiter,
+} from "../middleware/rateLimit.js";
+
+import {
   registerUser,
   loginUser,
   sendOtp,
@@ -20,11 +26,11 @@ import {
   changePassword, // ✅ NEW
 
   addToWishlist,
+  removeFromCart,
   removeFromWishlist,
   getWishlist,
 
   addToCart,
-  removeFromCart,
   updateCartItemQuantity,
   overwriteCart,
   getCart,
@@ -36,10 +42,10 @@ const router = express.Router();
 // Auth Routes
 // ======================
 router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/login", loginLimiter, loginUser);
 
 // ✅ OTP login step
-router.post("/verify-login-otp", verifyLoginOtp);
+router.post("/verify-login-otp", verifyLoginOtpLimiter, verifyLoginOtp);
 
 // ✅ profile
 router.get("/profile", authMiddleware, getUserProfile);
@@ -49,7 +55,7 @@ router.put("/profile", authMiddleware, updateProfile);
 router.delete("/account", authMiddleware, deleteAccount);
 
 // ✅ signup + reset OTP
-router.post("/send-otp", sendOtp);
+router.post("/send-otp", sendOtpLimiter, sendOtp);
 router.post("/verify-otp", verifyOtp);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-otp", verifyResetOtp);
