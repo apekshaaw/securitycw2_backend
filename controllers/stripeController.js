@@ -15,14 +15,12 @@ export const createCheckoutSession = async (req, res) => {
   try {
     const { cartItems, delivery } = req.body;
 
-    // comes from authMiddleware
     const userId = req.userId || "guest";
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    // ✅ Delivery validation
     const fullName = delivery?.name?.trim();
     const contact = delivery?.contact?.trim();
     const location = delivery?.location?.trim();
@@ -31,7 +29,6 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ message: "Delivery details are required" });
     }
 
-    // ✅ Build line items
     const lineItems = cartItems.map((item) => {
       const name = String(item.name || "Item");
       const unitAmount = Math.round((Number(item.price) || 0) * 100);
