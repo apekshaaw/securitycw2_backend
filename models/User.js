@@ -71,7 +71,6 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
-    // 🔐 SECURITY FIELDS (NEW)
 
     loginAttempts: {
       type: Number,
@@ -84,7 +83,7 @@ const userSchema = new mongoose.Schema(
     },
 
     otp: {
-      type: String, // hashed OTP
+      type: String, 
       default: null,
     },
 
@@ -94,7 +93,7 @@ const userSchema = new mongoose.Schema(
     },
 
     otpPurpose: {
-      type: String, // "login" | "signup" | "reset"
+      type: String, 
       default: null,
     },
   },
