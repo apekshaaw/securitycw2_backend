@@ -15,20 +15,17 @@ const authMiddleware = async (req, res, next) => {
       throw new Error('JWT_SECRET not defined');
     }
 
-    // Decode token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded || !decoded.id) {
       return res.status(401).json({ message: 'Invalid token payload' });
     }
 
-    // Fetch user
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    // Attach user info to request
     req.user = user;
     req.userId = user._id.toString();
     req.userRole = user.role;
