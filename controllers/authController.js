@@ -89,9 +89,7 @@ export const sendOtp = async (req, res) => {
   }
 };
 
-// ======================
-// VERIFY OTP (SIGNUP)
-// ======================
+
 export const verifyOtp = async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -118,9 +116,7 @@ export const verifyOtp = async (req, res) => {
   }
 };
 
-// ======================
-// Register User (UPDATED: admin email => admin role)
-// ======================
+
 export const registerUser = async (req, res) => {
   try {
     const name = String(req.body?.name || "").trim();
@@ -141,7 +137,6 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role: ADMIN_EMAILS.has(email) ? "admin" : "user",
-       // ✅ NEW
     });
 
     req.user = user;
@@ -159,9 +154,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// ======================
-// Login User (STEP 1 → PASSWORD + LOCK + OTP)
-// ======================
+
 export const loginUser = async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -173,7 +166,6 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // 🔒 Account locked check
     if (user.lockUntil && user.lockUntil > Date.now()) {
   await logAction(req, "LOGIN_BLOCKED_LOCKED", { email, lockUntil: user.lockUntil });
   return res.status(403).json({
@@ -202,12 +194,10 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // ✅ Password correct → reset lock
     user.loginAttempts = 0;
     user.lockUntil = null;
     await user.save();
 
-    // ✅ Send login OTP
     const otp = generateOtp();
     otpStore.set(email, {
       otpHash: hashOtp(otp),
@@ -228,9 +218,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// ======================
-// VERIFY LOGIN OTP (STEP 2 → JWT)
-// ======================
+
 export const verifyLoginOtp = async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -253,7 +241,6 @@ export const verifyLoginOtp = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // ✅ NEW: enforce admin role forever for admin emails
     if (ADMIN_EMAILS.has(user.email) && user.role !== "admin") {
       user.role = "admin";
       await user.save();
@@ -287,12 +274,10 @@ export const verifyLoginOtp = async (req, res) => {
   }
 };
 
-// ======================
-// VERIFY PASSWORD (FOR SENSITIVE ACTIONS)
-// ======================
+
 export const verifyPassword = async (req, res) => {
   try {
-    const userId = req.userId; // comes from auth middleware
+    const userId = req.userId; 
     const { password } = req.body;
 
     if (!password) {
@@ -318,9 +303,7 @@ export const verifyPassword = async (req, res) => {
 };
 
 
-// ======================
-// FORGOT PASSWORD: SEND OTP
-// ======================
+
 export const forgotPassword = async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -348,9 +331,6 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// ======================
-// FORGOT PASSWORD: VERIFY OTP
-// ======================
 export const verifyResetOtp = async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -378,9 +358,7 @@ export const verifyResetOtp = async (req, res) => {
   }
 };
 
-// ======================
-// RESET PASSWORD (OTP REQUIRED)
-// ======================
+
 export const resetPassword = async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
@@ -422,9 +400,7 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// ======================
-// Profile Update / Delete
-// ======================
+
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.userId;
