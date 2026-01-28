@@ -38,32 +38,25 @@ import {
 
 const router = express.Router();
 
-// ======================
-// Auth Routes
-// ======================
 router.post("/register", registerUser);
 router.post("/login", loginLimiter, loginUser);
 
-// ✅ OTP login step
 router.post("/verify-login-otp", verifyLoginOtpLimiter, verifyLoginOtp);
 
-// ✅ profile
 router.get("/profile", authMiddleware, getUserProfile);
 router.put("/profile", authMiddleware, updateProfile);
 
-// ✅ delete account
 router.delete("/account", authMiddleware, deleteAccount);
 
-// ✅ signup + reset OTP
 router.post("/send-otp", sendOtpLimiter, sendOtp);
 router.post("/verify-otp", verifyOtp);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-otp", verifyResetOtp);
 router.post("/reset-password", resetPassword);
 
-// ✅ sensitive verification / password
+
 router.post("/verify-password", authMiddleware, verifyPassword);
-router.put("/change-password", authMiddleware, changePassword); // ✅ NEW
+router.put("/change-password", authMiddleware, changePassword); 
 
 // ======================
 // Wishlist Routes
