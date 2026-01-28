@@ -6,7 +6,6 @@ const getClientIp = (req) => {
   return req.ip || req.connection?.remoteAddress || null;
 };
 
-// ✅ NEVER throws (won’t break your app)
 export const logAction = async (req, action, extra = {}) => {
   try {
     const userId = req.user?._id || null;
@@ -25,6 +24,5 @@ export const logAction = async (req, action, extra = {}) => {
       },
     });
   } catch (e) {
-    // ignore — logging must never break app
   }
 };
