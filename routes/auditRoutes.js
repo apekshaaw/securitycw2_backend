@@ -5,7 +5,6 @@ import AuditLog from "../models/AuditLog.js";
 
 const router = express.Router();
 
-// GET /api/admin/audit-logs
 router.get("/audit-logs", authMiddleware, adminOnly, async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page || "1", 10), 1);
